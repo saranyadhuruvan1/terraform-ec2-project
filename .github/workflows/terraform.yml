@@ -42,3 +42,6 @@ jobs:
         if: github.ref == 'refs/heads/main'
         working-directory: environments/dev
         run: terraform apply -var-file=dev.tfvars -auto-approve -input=false
+      - name: Terraform Destroy
+        working-directory: environments/${{ env.ENV }}
+        run: terraform destroy -var-file=${{ env.ENV }}.tfvars -auto-approve

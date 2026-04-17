@@ -12,7 +12,7 @@ terraform.tfstate.backup
 crash.log
 
 # Local environment files
-*.tfvars
+#*.tfvars
 *.auto.tfvars
 
 # Ignore environment-specific .terraform folders
