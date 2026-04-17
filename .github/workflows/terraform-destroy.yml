@@ -1,0 +1,41 @@
+name: Terraform Destroy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to destroy"
+        required: true
+        type: choice
+        options:
+          - dev
+          - stage
+          - prod
+      confirm_destroy:
+        description: "Type YES to confirm"
+        required: true
+        type: string
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm_destroy == 'YES' }}
+
+    env:
+      ENV: ${{ github.event.inputs.environment }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-1"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working-directory: environments/${{ env.ENV }}
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: environments/${{ env.ENV }}
+        run: terraform destroy -var-file=${{ env.ENV }}.tfvars -auto-approve

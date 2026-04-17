@@ -1,49 +1,40 @@
-name: Terraform Import
+name: Terraform Plan
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Select environment"
+        description: "Environment"
         required: true
         type: choice
         options:
           - dev
           - stage
           - prod
-      resource_address:
-        description: "Terraform resource address (module.x.resource.y)"
-        required: true
-        type: string
-      aws_id:
-        description: "AWS resource ID (sg-xxxx, i-xxxx, etc.)"
-        required: true
-        type: string
 
 jobs:
-  import:
+  plan:
     runs-on: ubuntu-latest
 
     env:
+      ENV: ${{ github.event.inputs.environment || 'dev' }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: "us-east-1"
-      ENV: ${{ github.event.inputs.environment }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
         working-directory: environments/${{ env.ENV }}
         run: terraform init
 
-      - name: Terraform Import
+      - name: Terraform Validate
         working-directory: environments/${{ env.ENV }}
-        run: terraform import "${{ github.event.inputs.resource_address }}" "${{ github.event.inputs.aws_id }}"
+        run: terraform validate
 
       - name: Terraform Plan
         working-directory: environments/${{ env.ENV }}
